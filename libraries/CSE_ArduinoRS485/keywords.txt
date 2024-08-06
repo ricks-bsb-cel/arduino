@@ -1,0 +1,38 @@
+#######################################
+# Syntax Coloring Map For CSE_ArduinoRS485
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+RS485Class  KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin KEYWORD2
+end KEYWORD2
+peek  KEYWORD2
+read  KEYWORD2
+flush KEYWORD2
+write KEYWORD2
+available KEYWORD2
+
+beginTransmission KEYWORD2
+endTransmission KEYWORD2
+receive KEYWORD2
+noReceive KEYWORD2
+sendBreak KEYWORD2
+sendBreakMicroseconds KEYWORD2
+setPins KEYWORD2
+setDelays KEYWORD2
+assertDE KEYWORD2
+deassertDE KEYWORD2
+assertRE KEYWORD2
+deassertRE KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################

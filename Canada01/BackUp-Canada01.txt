@@ -1,0 +1,127 @@
+
+#include <Arduino.h>
+#include <ArduinoJson.h>  // https://arduinojson.org/?utm_source=meta&utm_medium=library.properties
+#include <ArduinoJson.hpp>
+
+#include <vector>
+#include <iostream>
+#include <sstream>
+#include <string>
+
+#include <U8g2lib.h>
+#include <SPI.h>
+#include <Wire.h>
+
+#include <DNSServer.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
+#include <ESP8266HTTPClient.h>
+#include <WiFiClientSecure.h>  // Include for HTTPS
+
+#include <eeboom.h>
+
+#include "Util.h"
+#include "BuildInLed.h"
+#include "LcdFreeWrite.h"
+#include "WiFiNetwork.h"
+#include "Portal.h"
+#include "rtdbReles.h"
+
+#define SERIAL_BAUD 74880  // Use este valor para ver também as msgs da própria placa
+
+// Crie uma instância de SoftwareSerial
+// SoftwareSerial rs485Serial(RS485_RX_PIN, RS485_TX_PIN);
+
+// LcdOutput lcd;
+// WiFiNetwork network(&lcd, &buildLed);
+// DHT11Sensor sensor;
+// Reles rele;
+
+// Coloque fora do loop o que deve ser inicializado apenas uma vez
+BuildInLed buildLed;
+WiFiNetwork Net;
+LcdFreeWrite Lcd("HeySensa");  // O False desabilita o display, para o caso dele não existir. As msgs serão enviadas para a porta Serial
+Portal PortalHtml(&Net, &Lcd, "HeySensa");
+
+void setup() {
+  Lcd.Log("Starting...");
+  Serial.begin(SERIAL_BAUD);  // Usado para comunicação com a USB e debug print
+  buildLed.Off();
+  PortalHtml.Setup("HeySensa");
+}
+
+rtdbReles Reles(&Net, &Lcd);
+
+void loop() {
+  PortalHtml.Loop();
+  Reles.Loop();
+
+
+
+  /*
+  buildLed.On();
+
+  rele.Alternate(0);
+  rele.Alternate(1);
+
+  if (sensor.Measure()) {
+    WiFiPayloadModel payload = network.GetDefaultPayload("LocalSensor");
+
+    lcd.Set("loctemp", sensor.getTemperatureAsString());
+    lcd.Set("lochumi", sensor.getHumidityAsString());
+
+    payload.Temperature = sensor.getTemperature();
+    payload.Humidity = sensor.getHumidity();
+
+    network.SendSensorData(payload);
+  }
+
+  while (Serial.available()) {
+    Serial.flush();
+  }
+
+  while (rs485Serial.available()) {
+    rs485Serial.flush();
+  }
+
+  delay(1000);
+
+  rs485Serial.write(TempAndHumidity, 8);  // Envia
+
+  int wait = 30;
+
+  while (!rs485Serial.available() && wait > 0) {
+    wait--;
+    delay(100);
+  }
+
+  int i = 0;
+  byte receivedPayload[8];
+  bool success = false;
+
+  while (rs485Serial.available() && i < 8) {
+    success = true;
+    byte received = rs485Serial.read();
+    receivedPayload[i] = received;
+    i++;
+  }
+
+  if (success) {
+    Util u;
+
+    float tempResult = u.HexToFloat(receivedPayload[TEMP_HB], receivedPayload[TEMP_LB]);
+    String sTempResult = String(tempResult, 1) + "C";
+
+    float humidityResult = u.HexToFloat(receivedPayload[HUMIDITY_HB], receivedPayload[HUMIDITY_LB]);
+    String sHumiResult = String(humidityResult, 1) + "%";
+
+    lcd.Set("remtemp", sTempResult);
+    lcd.Set("remhumi", sHumiResult);
+  }
+  // Vamos testar -------------------------
+
+  // network.Log("Uma mensagem qualquer de teste...");
+
+  buildLed.Off();
+  */
+}

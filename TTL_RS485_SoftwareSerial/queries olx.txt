@@ -1,0 +1,211 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Xunit;
+using SA.ApplicationStandard.Utility;
+using Shouldly;
+using Anapro.BusinessLayer.Utility;
+using Anapro.BusinessLayer.Utility.Zip;
+using DocuSign.eSign.Model;
+using Anapro.DataTransferObject;
+using System.IO;
+using DocumentFormat.OpenXml.Drawing;
+using System.Data;
+using Anapro.AgentService.Sisimob;
+using AnaproTestes.Masterplan;
+using System.IO.Packaging;
+namespace AnaproTestes.Storage
+{
+    public class AzureTestes
+    {
+        //int idConstrutora = 254;
+        //[Fact]
+        //public void testar_renameBlob()
+        //{
+        //    var objStorage = new Anapro.BusinessLayer.Unmapped.Storage.StorageFactory().GetInstance();
+        //    objStorage.RenameFile("/personalizacao/30745_FX01_ESTADO.txt", "/personalizacao/30745_FX01_ESTADO_TudoOK.txt");
+        //    Assert.True(true);
+        //}
+        //-------- LUGARES QUE ARMAZENAMOS DOCUMENTOS --------
+        /*
+            contratos
+            anexos(no gerenciar documentos e imagens, que tem memorial, planta geral..)
+                PastasStorage().PastaArquivos() + voArquivo.OBA_CHAVE.ToString() + tamanho + "." + voArquivo.OBA_EXTENSAO - Tabela OBRA_ARQUIVO
+                PastasStorage().PastaArquivosGlobal() + ARQ_NOME - Tabela ARQUIVO fazer join com a tabela UNIDADE
+            docs vinculados ao cliente
+                PastasStorage().PastaArquivosGlobal() + CLA_NOME - Tabela CLIENTE_ARQUIVO
+            docs vinculados a analise de crédito
+                PastasStorage().PastaArquivosGlobal() + ARQ_NOME - Tabela ARQUIVO fazer join com a tabela PROCESSO_ARQUIVO
+            docs vinculados ao produto
+                PastasStorage().PastaArquivosGlobal() + ARQ_NOME - Tabela ARQUIVO fazer join com a tabela PRODUTO_MEDIA
+        */
+        //[Fact]
+        //public void Exportar_Arquivo()
+        //{
+        //    List<ExtracaoStorage> lstArquivos = new List<ExtracaoStorage>();
+        //    lstArquivos.AddRange(ArquivosCliente());
+        //    lstArquivos.AddRange(ArquivosContrato());
+        //    lstArquivos.AddRange(ArquivosUnidade());
+        //    lstArquivos.AddRange(ArquivosAnaliseCredito());
+        //    lstArquivos.AddRange(ArquivosProduto());
+        //    ExportarArquivos(lstArquivos);
+        //}
+        //private void ExportarArquivos(List<ExtracaoStorage> arquivos)
+        //{
+        //    Anapro.BusinessLayer.Unmapped.Storage.AzureStorageBlob storageAtual = new Anapro.BusinessLayer.Unmapped.Storage.AzureStorageBlob();
+        //    List<string> tamanhos = new List<string>()
+        //    {
+        //        "P",
+        //        "M",
+        //        "G"
+        //    };
+        //    foreach (var arquivo in arquivos)
+        //    {
+        //        string nomeArquivo = arquivo.filekey;
+        //        int segundaBarraIndex = nomeArquivo.IndexOf('/', nomeArquivo.IndexOf('/') + 1);
+        //        if (segundaBarraIndex >= 0)
+        //        {
+        //            nomeArquivo = nomeArquivo.Substring(segundaBarraIndex + 1);
+        //        }
+        //        string filekeySalvar = string.Empty;
+        //        switch (arquivo.origem)
+        //        {
+        //            case ExtracaoStorage.Origem.cliente:
+        //                filekeySalvar = $"files/{arquivo.origem}/{arquivo.idCliente.Value}/{nomeArquivo}";
+        //                break;
+        //            case ExtracaoStorage.Origem.contrato:
+        //                if (!storageAtual.Exists(arquivo.filekey))
+        //                {
+        //                    foreach (string tamanho in tamanhos)
+        //                    {
+        //                        string newFileKey = string.Empty;
+        //                        newFileKey = $"{new SA.ApplicationStandard.Storage.PastasStorage().PastaArquivos() + arquivo.chaveObra + tamanho}.{arquivo.extensaoObra}";
+        //                        if (storageAtual.Exists(newFileKey))
+        //                        {
+        //                            filekeySalvar = $"files/{arquivo.origem}/{arquivo.idObra.Value}/{arquivo.chaveObra + tamanho}.{arquivo.extensaoObra}";
+        //                            SalvarNoNovoContainer(newFileKey, filekeySalvar);
+        //                        }
+        //                    }
+        //                }
+        //                else
+        //                {
+        //                    filekeySalvar = $"files/{arquivo.origem}/{arquivo.idObra.Value}/{nomeArquivo}";
+        //                }
+        //                break;
+        //            case ExtracaoStorage.Origem.unidade:
+        //                filekeySalvar = $"files/{arquivo.origem}/{arquivo.idUnidade.Value}/{nomeArquivo}";
+        //                break;
+        //            case ExtracaoStorage.Origem.analiseCredito:
+        //                filekeySalvar = $"files/{arquivo.origem}/{arquivo.idProcesso.Value}/{nomeArquivo}";
+        //                break;
+        //            case ExtracaoStorage.Origem.produto:
+        //                filekeySalvar = $"files/{arquivo.origem}/{arquivo.idProduto.Value}/{nomeArquivo}";
+        //                break;
+        //        }
+        //        if (storageAtual.Exists(arquivo.filekey))
+        //        {
+        //            SalvarNoNovoContainer(arquivo.filekey, filekeySalvar);
+        //        }
+        //    }
+        //}
+        //private void SalvarNoNovoContainer(string fileKeyAtual, string fileKeySalvar)
+        //{
+        //    Anapro.BusinessLayer.Unmapped.Storage.AzureStorageBlob storageAtual = new Anapro.BusinessLayer.Unmapped.Storage.AzureStorageBlob();
+        //    Anapro.BusinessLayer.Unmapped.Storage.AzureStorageBlob storageNovo = new Anapro.BusinessLayer.Unmapped.Storage.AzureStorageBlob(
+        //        "temp-ekko",
+        //        null,
+        //        "DefaultEndpointsProtocol=https;AccountName=anaprostorage;AccountKey=***REMOVED***",
+        //        "anaprostorage.blob.core.windows.net");
+        //    Stream arquivoAtual = storageAtual.ReadFile(fileKeyAtual);
+        //    if (!storageNovo.Exists(fileKeySalvar))
+        //    {
+        //        storageNovo.PutFile(fileKeySalvar, arquivoAtual);
+        //    }
+        //}
+        //private List<ExtracaoStorage> ArquivosCliente()
+        //{
+        //    DataSet ds = new SuperBL<Anapro.ValueObject.CLIENTE_ARQUIVO>().FindDataSet(new Anapro.ValueObject.CLIENTE_ARQUIVO()
+        //    {
+        //        CON_CODIGO = idConstrutora,
+        //        Options = new SA.ApplicationStandard.Data.VOBOptions() { selectColumns = "CLI_CODIGO,CLA_NOME" }
+        //    });
+        //    List<ExtracaoStorage> lstArquivos = ds.Tables[0].AsEnumerable()
+        //        .Select(dataRow => new ExtracaoStorage
+        //        {
+        //            idCliente = dataRow.Field<long>("CLI_CODIGO"),
+        //            nomeArquivo = dataRow.Field<string>("CLA_NOME"),
+        //            origem = ExtracaoStorage.Origem.cliente,
+        //            filekey = new SA.ApplicationStandard.Storage.PastasStorage().PastaClienteArquivo() + dataRow.Field<string>("CLA_NOME")
+        //        }).ToList();
+        //    return lstArquivos;
+        //}
+        //private List<ExtracaoStorage> ArquivosContrato()
+        //{
+        //    DataSet ds = new Anapro.BusinessLayer.OBRA_ARQUIVO().GetArquivoPorConstrutora(idConstrutora);
+        //    List<ExtracaoStorage> lstArquivos = ds.Tables[0].AsEnumerable()
+        //        .Select(dataRow => new ExtracaoStorage
+        //        {
+        //            idObra = dataRow.Field<long>("ob_codigo"),
+        //            chaveObra = dataRow.Field<string>("oba_chave"),
+        //            extensaoObra = dataRow.Field<string>("oba_extensao"),
+        //            origem = ExtracaoStorage.Origem.contrato,
+        //            filekey = new SA.ApplicationStandard.Storage.PastasStorage().PastaArquivos() + dataRow.Field<string>("oba_chave") + "." + dataRow.Field<string>("oba_extensao")
+        //        }).ToList();
+        //    return lstArquivos;
+        //}
+        //private List<ExtracaoStorage> ArquivosUnidade()
+        //{
+        //    DataSet ds = new Anapro.BusinessLayer.ARQUIVO().GetArquivosUnidadePorConstrutora(idConstrutora);
+        //    List<ExtracaoStorage> lstArquivos = ds.Tables[0].AsEnumerable()
+        //        .Select(dataRow => new ExtracaoStorage
+        //        {
+        //            idArquivo = dataRow.Field<int>("arq_codigo"),
+        //            nomeArquivo = dataRow.Field<string>("arq_nome"),
+        //            idUnidade = dataRow.Field<long>("un_codigo"),
+        //            origem = ExtracaoStorage.Origem.unidade,
+        //            filekey = new SA.ApplicationStandard.Storage.PastasStorage().PastaArquivosGlobal() + dataRow.Field<string>("arq_nome")
+        //        }).ToList();
+        //    return lstArquivos;
+        //}
+        //private List<ExtracaoStorage> ArquivosAnaliseCredito()
+        //{
+        //    DataSet ds = new Anapro.BusinessLayer.ARQUIVO().GetArquivosProcessoPorConstrutora(idConstrutora);
+        //    //Ver como adicionar o id do processo
+        //    List<ExtracaoStorage> lstArquivos = ds.Tables[0].AsEnumerable()
+        //        .Select(dataRow => new ExtracaoStorage
+        //        {
+        //            idArquivo = dataRow.Field<int?>("arq_codigo"),
+        //            nomeArquivo = dataRow.Field<string>("arq_nome"),
+        //            idProcesso = dataRow.Field<int>("id"),
+        //            origem = ExtracaoStorage.Origem.analiseCredito,
+        //            filekey = new SA.ApplicationStandard.Storage.PastasStorage().PastaArquivosGlobal() + dataRow.Field<string>("arq_nome")
+        //        }).ToList();
+        //    return lstArquivos;
+        //}
+        //private List<ExtracaoStorage> ArquivosProduto()
+        //{
+        //    DataSet ds = new Anapro.BusinessLayer.ARQUIVO().GetArquivosProdutoPorConstrutora(idConstrutora);
+        //    //Ver como adicionar o id do produto
+        //    List<ExtracaoStorage> lstArquivos = ds.Tables[0].AsEnumerable()
+        //        .Select(dataRow => new ExtracaoStorage
+        //        {
+        //            idArquivo = dataRow.Field<int?>("arq_codigo"),
+        //            nomeArquivo = dataRow.Field<string>("arq_nome"),
+        //            idProduto = dataRow.Field<int>("id"),
+        //            origem = ExtracaoStorage.Origem.produto,
+        //            filekey = new SA.ApplicationStandard.Storage.PastasStorage().PastaArquivosGlobal() + dataRow.Field<string>("arq_nome")
+        //        }).ToList();
+        //    return lstArquivos;
+        //}
+        //private string CaminhoStorage(string nomeArquivo, int idConstrutora, long idCliente)
+        //{
+        //    return $"/temp/backup/{idConstrutora}/{idCliente}/{nomeArquivo}";
+        //}
+        //private string CaminhoSalvar(int idConstrutora, int iteracao)
+        //{
+        //    return $"temp/backup/{idConstrutora}_part{iteracao}.zip";
+        //}
+    }
+}
