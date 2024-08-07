@@ -1,6 +1,6 @@
 
 extern "C" {
-  #include "user_interface.h"
+#include "user_interface.h"
 
   void app_loop();
   void restartMCU();
@@ -10,19 +10,19 @@ extern "C" {
 #include <BlynkSimpleEsp8266_SSL.h>
 
 #if defined(BLYNK_USE_LITTLEFS)
-  #include <LittleFS.h>
-  #define BLYNK_FS LittleFS
+#include <LittleFS.h>
+#define BLYNK_FS LittleFS
 #elif defined(BLYNK_USE_SPIFFS)
-  #if defined(ESP32)
-    #include <SPIFFS.h>
-  #elif defined(ESP8266)
-    #include <FS.h>
-  #endif
-  #define BLYNK_FS SPIFFS
+#if defined(ESP32)
+#include <SPIFFS.h>
+#elif defined(ESP8266)
+#include <FS.h>
+#endif
+#define BLYNK_FS SPIFFS
 #endif
 #if defined(BLYNK_FS) && defined(ESP8266)
-  #define BLYNK_FILE_READ  "r"
-  #define BLYNK_FILE_WRITE "w"
+#define BLYNK_FILE_READ "r"
+#define BLYNK_FILE_WRITE "w"
 #endif
 
 #ifndef BLYNK_NEW_LIBRARY
@@ -52,10 +52,9 @@ BlynkTimer edgentTimer;
 #include "Console.h"
 
 
-inline
-void BlynkState::set(State m) {
+inline void BlynkState::set(State m) {
   if (state != m && m < MODE_MAX_VALUE) {
-    DEBUG_PRINT(String(StateStr[state]) + " => " + StateStr[m]);
+    // DEBUG_PRINT(String(StateStr[state]) + " => " + StateStr[m]);
     state = m;
 
     // You can put your state handling here,
@@ -63,24 +62,30 @@ void BlynkState::set(State m) {
   }
 }
 
-void printDeviceBanner()
-{
+void printDeviceBanner() {
 #ifdef BLYNK_PRINT
   Blynk.printBanner();
   BLYNK_PRINT.println("----------------------------------------------------");
-  BLYNK_PRINT.print(" Device:    "); BLYNK_PRINT.println(getWiFiName());
-  BLYNK_PRINT.print(" Firmware:  "); BLYNK_PRINT.println(BLYNK_FIRMWARE_VERSION " (build " __DATE__ " " __TIME__ ")");
+  BLYNK_PRINT.print(" Device:    ");
+  BLYNK_PRINT.println(getWiFiName());
+  BLYNK_PRINT.print(" Firmware:  ");
+  BLYNK_PRINT.println(BLYNK_FIRMWARE_VERSION " (build " __DATE__ " " __TIME__ ")");
   if (configStore.getFlag(CONFIG_FLAG_VALID)) {
     BLYNK_PRINT.print(" Token:     ");
-    BLYNK_PRINT.println(String(configStore.cloudToken).substring(0,4) +
-                " - •••• - •••• - ••••");
+    BLYNK_PRINT.println(String(configStore.cloudToken).substring(0, 4) + " - •••• - •••• - ••••");
   }
-  BLYNK_PRINT.print(" Platform:  "); BLYNK_PRINT.println(String(BLYNK_INFO_DEVICE) + " @ " + ESP.getCpuFreqMHz() + "MHz");
-  BLYNK_PRINT.print(" Boot ver:  "); BLYNK_PRINT.println(ESP.getBootVersion());
-  BLYNK_PRINT.print(" SDK:       "); BLYNK_PRINT.println(ESP.getSdkVersion());
-  BLYNK_PRINT.print(" ESP Core:  "); BLYNK_PRINT.println(ESP.getCoreVersion());
-  BLYNK_PRINT.print(" Flash:     "); BLYNK_PRINT.println(String(ESP.getFlashChipSize() / 1024) + "K");
-  BLYNK_PRINT.print(" Free mem:  "); BLYNK_PRINT.println(ESP.getFreeHeap());
+  BLYNK_PRINT.print(" Platform:  ");
+  BLYNK_PRINT.println(String(BLYNK_INFO_DEVICE) + " @ " + ESP.getCpuFreqMHz() + "MHz");
+  BLYNK_PRINT.print(" Boot ver:  ");
+  BLYNK_PRINT.println(ESP.getBootVersion());
+  BLYNK_PRINT.print(" SDK:       ");
+  BLYNK_PRINT.println(ESP.getSdkVersion());
+  BLYNK_PRINT.print(" ESP Core:  ");
+  BLYNK_PRINT.println(ESP.getCoreVersion());
+  BLYNK_PRINT.print(" Flash:     ");
+  BLYNK_PRINT.println(String(ESP.getFlashChipSize() / 1024) + "K");
+  BLYNK_PRINT.print(" Free mem:  ");
+  BLYNK_PRINT.println(ESP.getFreeHeap());
   BLYNK_PRINT.println("----------------------------------------------------");
 #endif
 }
@@ -101,8 +106,7 @@ void runBlynkWithChecks() {
 class Edgent {
 
 public:
-  void begin()
-  {
+  void begin() {
 
 #ifdef BLYNK_FS
     BLYNK_FS.begin();
@@ -117,16 +121,14 @@ public:
     if (configStore.getFlag(CONFIG_FLAG_VALID)) {
       BlynkState::set(MODE_CONNECTING_NET);
     } else if (config_load_blnkopt()) {
-      DEBUG_PRINT("Firmware is preprovisioned");
+      // DEBUG_PRINT("Firmware is preprovisioned");
       BlynkState::set(MODE_CONNECTING_NET);
     } else {
       BlynkState::set(MODE_WAIT_CONFIG);
     }
 
-    if (!String(BLYNK_TEMPLATE_ID).startsWith("TMPL") ||
-        !strlen(BLYNK_TEMPLATE_NAME)
-    ) {
-      DEBUG_PRINT("Invalid configuration of TEMPLATE_ID / TEMPLATE_NAME");
+    if (!String(BLYNK_TEMPLATE_ID).startsWith("TMPL") || !strlen(BLYNK_TEMPLATE_NAME)) {
+      // DEBUG_PRINT("Invalid configuration of TEMPLATE_ID / TEMPLATE_NAME");
       while (true) { delay(100); }
     }
   }
@@ -134,22 +136,21 @@ public:
   void run() {
     app_loop();
     switch (BlynkState::get()) {
-    case MODE_WAIT_CONFIG:       
-    case MODE_CONFIGURING:       enterConfigMode();    break;
-    case MODE_CONNECTING_NET:    enterConnectNet();    break;
-    case MODE_CONNECTING_CLOUD:  enterConnectCloud();  break;
-    case MODE_RUNNING:           runBlynkWithChecks(); break;
-    case MODE_OTA_UPGRADE:       enterOTA();           break;
-    case MODE_SWITCH_TO_STA:     enterSwitchToSTA();   break;
-    case MODE_RESET_CONFIG:      enterResetConfig();   break;
-    default:                     enterError();         break;
+      case MODE_WAIT_CONFIG:
+      case MODE_CONFIGURING: enterConfigMode(); break;
+      case MODE_CONNECTING_NET: enterConnectNet(); break;
+      case MODE_CONNECTING_CLOUD: enterConnectCloud(); break;
+      case MODE_RUNNING: runBlynkWithChecks(); break;
+      case MODE_OTA_UPGRADE: enterOTA(); break;
+      case MODE_SWITCH_TO_STA: enterSwitchToSTA(); break;
+      case MODE_RESET_CONFIG: enterResetConfig(); break;
+      default: enterError(); break;
     }
   }
 
 } BlynkEdgent;
 
 void app_loop() {
-    edgentTimer.run();
-    edgentConsole.run();
+  edgentTimer.run();
+  edgentConsole.run();
 }
-

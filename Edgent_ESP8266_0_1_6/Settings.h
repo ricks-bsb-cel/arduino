@@ -91,6 +91,7 @@
 
 #define BLYNK_NO_DEFAULT_BANNER
 
+/*
 #if defined(APP_DEBUG)
   #define DEBUG_PRINT(...)  BLYNK_LOG1(__VA_ARGS__)
   #define DEBUG_PRINTF(...) BLYNK_LOG(__VA_ARGS__)
@@ -98,4 +99,4 @@
   #define DEBUG_PRINT(...)
   #define DEBUG_PRINTF(...)
 #endif
-
+*/
