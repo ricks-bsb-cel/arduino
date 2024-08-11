@@ -9,6 +9,7 @@ U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 14, 12, U8X8_PIN_NONE);  // Co
 
 // https://www.makerhero.com/blog/controlando-um-display-oled-com-a-biblioteca-ssd1306/
 // https://adafruit.github.io/Adafruit_SSD1306/html/class_adafruit___s_s_d1306.html
+// https://github.com/olikraus/u8g2/wiki/u8g2reference#setflipmode
 class LcdLog {
 private:
   bool lcdEnabled = false;
@@ -38,6 +39,7 @@ public:
       }
 
       u8g2.begin();  // Inicialização do display
+      // u8g2.setFlipMode(1);
 
       u8g2.clearBuffer();
       u8g2.drawFrame(1, 0, 127, 16);
