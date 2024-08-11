@@ -3,13 +3,12 @@
 #define BLYNK_TEMPLATE_NAME "4 Relay Module"
 
 /* Don't forguet to update firmware versions! */
-#define BLYNK_FIRMWARE_VERSION "0.1.4"
+#define BLYNK_FIRMWARE_VERSION "0.1.7"
 
 #define BLYNK_PRINT Serial
 #define BLYNK_DEBUG
 #define APP_DEBUG
 #define USE_NODE_MCU_BOARD
-
 
 /* Main Libs */
 
@@ -35,17 +34,15 @@
 #define _PinDeviceID V6
 
 #define _TopMessage V0
-#define _ResetWiFi V99
+#define _Version V99
 
 #define _PinD1 V1
 #define _PinD2 V2
 #define _PinD3 V3
-// #define _PinD4 V4
 
 #define ConfRele1 V11
 #define ConfRele2 V12
 #define ConfRele3 V13
-// #define ConfRele4 V14
 
 #define _vPinTemperature V20
 #define _vPinHumidity V21
@@ -102,10 +99,9 @@ void StartDevice() {
   String macAddress = WiFi.macAddress();
   String DeviceId = utils.MacToString(macAddress);
 
-  Blynk.beginGroup();
-
   Blynk.virtualWrite(_PinMacAddress, macAddress);
   Blynk.virtualWrite(_PinDeviceID, DeviceId);
+  Blynk.virtualWrite(_Version, String(BLYNK_FIRMWARE_VERSION));
 
   Blynk.virtualWrite(_PinD1, !digitalRead(Rele1));
   Blynk.virtualWrite(_PinD2, !digitalRead(Rele2));
@@ -114,8 +110,6 @@ void StartDevice() {
   Blynk.virtualWrite(ConfRele1, !digitalRead(Rele1));
   Blynk.virtualWrite(ConfRele2, !digitalRead(Rele2));
   Blynk.virtualWrite(ConfRele3, !digitalRead(Rele3));
-
-  Blynk.endGroup();
 
   Lcd.Log("Device registered");
 }
@@ -129,16 +123,19 @@ void TurnAllRelaysOff() {
 /* Blynk events */
 
 void BlinkTimer() {
-  if (Blynk.connected() && CallFirstUpdate) {
-    CallFirstUpdate = false;
-    Lcd.SetTopMessage("HeySensa " + String(BLYNK_FIRMWARE_VERSION));
-    StartDevice();
-  }
+  if (Blynk.connected()) {
 
-  Blynk.beginGroup();
-  SendStatus();
-  ReadDH11();
-  Blynk.endGroup();
+    if (CallFirstUpdate) {
+      CallFirstUpdate = false;
+      Lcd.SetTopMessage("HeySensa " + String(BLYNK_FIRMWARE_VERSION));
+      StartDevice();
+    } else {
+      Blynk.beginGroup();
+      SendStatus();
+      ReadDH11();
+      Blynk.endGroup();
+    }
+  }
 }
 
 BLYNK_WRITE(_TopMessage) {  // Mudança da Msg do Topo
@@ -177,8 +174,11 @@ void setup() {
   TurnAllRelaysOff();
 
   BlynkEdgent.begin();
+  Lcd.Log("OTA Started...");
   timer.setInterval(30000L, BlinkTimer);  // 30 Seconds
+  Lcd.Log("Device ready...");
 
+  // Try First update
   BlinkTimer();
 }
 
