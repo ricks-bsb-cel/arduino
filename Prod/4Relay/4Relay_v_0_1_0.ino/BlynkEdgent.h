@@ -115,7 +115,7 @@ public:
     indicator_init();
     button_init();
     config_init();
-    printDeviceBanner();
+    // printDeviceBanner();
     console_init();
 
     if (configStore.getFlag(CONFIG_FLAG_VALID)) {

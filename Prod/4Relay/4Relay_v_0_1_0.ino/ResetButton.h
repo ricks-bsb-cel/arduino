@@ -21,7 +21,7 @@ void button_change(void) {
     g_buttonPressed = true;
     DEBUG_PRINT("You can change WiFi");
     DEBUG_PRINT("holding reset button");
-    DEBUG_PRINT("for 5 seconds.");
+    DEBUG_PRINT("for 10 seconds.");
   } else if (!buttonState && g_buttonPressed) {
     g_buttonPressed = false;
     uint32_t buttonHoldTime = millis() - g_buttonPressTime;

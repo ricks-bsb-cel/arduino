@@ -2,8 +2,12 @@
 #define BLYNK_TEMPLATE_ID "TMPL2dhm-xT37"
 #define BLYNK_TEMPLATE_NAME "4 Relay Module"
 
+/*
+brisa-2154254: syvxfcxh
+*/
+
 /* Don't forguet to update firmware versions! */
-#define BLYNK_FIRMWARE_VERSION "0.1.7"
+#define BLYNK_FIRMWARE_VERSION "0.1.71"
 
 #define BLYNK_PRINT Serial
 #define BLYNK_DEBUG
@@ -19,16 +23,18 @@
 #include <sstream>
 #include <string>
 
+/*
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
 #include <DHT_U.h>
+*/
 
 #include "BlynkEdgent.h"
 #include "Utils.h"
 
 /* Virtual Pins Definition */
 
-#define DHTPIN D2  // What digital pin we're connected to
+// #define DHTPIN D2  // What digital pin we're connected to
 
 #define _PinMacAddress V5
 #define _PinDeviceID V6
@@ -58,13 +64,14 @@
 /* Initiators */
 /* Never Use D8. D4 is for Indicator Led */
 
-DHT_Unified dht(DHTPIN, DHT11);
+// DHT_Unified dht(DHTPIN, DHT11);
 BlynkTimer timer;
 Utils utils;
 
 /* General Methods */
 bool CallFirstUpdate = true;
 
+/*
 void ReadDH11() {
   sensors_event_t t;
   sensors_event_t h;
@@ -80,12 +87,7 @@ void ReadDH11() {
     Blynk.virtualWrite(_vPinHumidity, h.relative_humidity);
   }
 }
-
-void SendStatus() {
-  Blynk.virtualWrite(ConfRele1, !digitalRead(Rele1));
-  Blynk.virtualWrite(ConfRele2, !digitalRead(Rele2));
-  Blynk.virtualWrite(ConfRele3, !digitalRead(Rele3));
-}
+*/
 
 void SetDigitalPin(int pin, bool active) {
   if (active) {
@@ -95,7 +97,7 @@ void SetDigitalPin(int pin, bool active) {
   }
 };
 
-void StartDevice() {
+void RegistrateDevice() {
   String macAddress = WiFi.macAddress();
   String DeviceId = utils.MacToString(macAddress);
 
@@ -122,18 +124,26 @@ void TurnAllRelaysOff() {
 
 /* Blynk events */
 
-void BlinkTimer() {
-  if (Blynk.connected()) {
+int RefreshEach = 6;  // 60 Seconds
+int RefreshCount = 0;
 
+void BlinkTimer() {  // Each 10 Seconds
+  if (Blynk.connected()) {
     if (CallFirstUpdate) {
       CallFirstUpdate = false;
       Lcd.SetTopMessage("HeySensa " + String(BLYNK_FIRMWARE_VERSION));
-      StartDevice();
+      RegistrateDevice();
     } else {
-      Blynk.beginGroup();
-      SendStatus();
-      ReadDH11();
-      Blynk.endGroup();
+      if (RefreshCount == 0) {
+        RefreshCount = RefreshEach;
+        // ReadDH11();
+        Blynk.virtualWrite(ConfRele1, !digitalRead(Rele1));
+        Blynk.virtualWrite(ConfRele2, !digitalRead(Rele2));
+        Blynk.virtualWrite(ConfRele3, !digitalRead(Rele3));
+      }
+
+      RefreshCount--;
+      Lcd.ShowOnSameLine(String(RefreshCount));
     }
   }
 }
@@ -145,17 +155,17 @@ BLYNK_WRITE(_TopMessage) {  // Mudança da Msg do Topo
 BLYNK_WRITE(_PinD1) {
   bool active = param.asInt() == 1;
   SetDigitalPin(Rele1, active);
-  SendStatus();
+  Blynk.virtualWrite(ConfRele1, !digitalRead(Rele1));
 };
 BLYNK_WRITE(_PinD2) {
   bool active = param.asInt() == 1;
   SetDigitalPin(Rele2, active);
-  SendStatus();
+  Blynk.virtualWrite(ConfRele2, !digitalRead(Rele2));
 };
 BLYNK_WRITE(_PinD3) {
   bool active = param.asInt() == 1;
   SetDigitalPin(Rele3, active);
-  SendStatus();
+  Blynk.virtualWrite(ConfRele3, !digitalRead(Rele3));
 };
 
 void setup() {
@@ -164,8 +174,6 @@ void setup() {
 
   Lcd.Log("Starting...");
 
-  dht.begin();
-
   // Set Digital Pins
   pinMode(Rele1, OUTPUT);
   pinMode(Rele2, OUTPUT);
@@ -173,9 +181,11 @@ void setup() {
 
   TurnAllRelaysOff();
 
+  // dht.begin();
+
   BlynkEdgent.begin();
   Lcd.Log("OTA Started...");
-  timer.setInterval(30000L, BlinkTimer);  // 30 Seconds
+  timer.setInterval(10000L, BlinkTimer);  // 10 Seconds
   Lcd.Log("Device ready...");
 
   // Try First update

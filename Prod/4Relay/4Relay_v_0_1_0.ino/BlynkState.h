@@ -9,7 +9,6 @@ enum State {
   MODE_SWITCH_TO_STA,
   MODE_RESET_CONFIG,
   MODE_ERROR,
-
   MODE_MAX_VALUE
 };
 
