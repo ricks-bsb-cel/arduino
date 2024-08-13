@@ -2,10 +2,10 @@
 #define BLYNK_TEMPLATE_ID "TMPL2dhm-xT37"
 #define BLYNK_TEMPLATE_NAME "4 Relay Module"
 
-#define BLYNK_FIRMWARE_VERSION "0.1.31"
+#define BLYNK_FIRMWARE_VERSION "0.1.33"
 #define BLYNK_PRINT Serial
-#define BLYNK_DEBUG
-#define APP_DEBUG
+// #define BLYNK_DEBUG
+// #define APP_DEBUG
 #define USE_NODE_MCU_BOARD
 
 /* Relay Config ------------------------------ */
@@ -20,7 +20,15 @@
 #define VirtualConfRele1 V11
 #define VirtualConfRele2 V12
 #define VirtualConfRele3 V13
-/* ------------------------------------------- */
+
+/* DHT ------------------------------ */
+
+#define VirtualTemperature V20
+#define VirtualHumidity V21
+
+#define DHTPIN D2
+
+/* Lcd ------------------------------ */
 
 #include "LcdLog.h"
 LcdLog Lcd("HeySensa " + String(BLYNK_FIRMWARE_VERSION), true);
@@ -29,17 +37,39 @@ LcdLog Lcd("HeySensa " + String(BLYNK_FIRMWARE_VERSION), true);
 #define ShowOnLcdSameLine(msg) \
   { Lcd.ShowOnSameLine(msg); }
 
+/* ------------------------------------------- */
+
+#include <Adafruit_Sensor.h>
+#include <DHT.h>
+#include <DHT_U.h>
+
 #include "BlynkEdgent.h"
 
 BlynkTimer timer;
+DHT_Unified dht(DHTPIN, DHT11);
 
 void BlinkTimer() {
-  DEBUG_PRINT("Timer!");
+
+  /* DHT */
+  sensors_event_t t;
+  sensors_event_t h;
+
+  dht.temperature().getEvent(&t);
+  dht.humidity().getEvent(&h);
 
   Blynk.beginGroup();
   Blynk.virtualWrite(VirtualConfRele1, !digitalRead(PinRele1));
   Blynk.virtualWrite(VirtualConfRele2, !digitalRead(PinRele2));
   Blynk.virtualWrite(VirtualConfRele3, !digitalRead(PinRele3));
+
+  if (!isnan(t.temperature)) {
+    Blynk.virtualWrite(VirtualTemperature, t.temperature);
+  }
+
+  if (!isnan(h.relative_humidity)) {
+    Blynk.virtualWrite(VirtualHumidity, h.relative_humidity);
+  }
+
   Blynk.endGroup();
 }
 
@@ -96,7 +126,7 @@ void setup() {
   delay(100);
 
   BlynkEdgent.begin();
-  timer.setInterval(30000L, BlinkTimer);  // 10 Seconds
+  timer.setInterval(60000L, BlinkTimer);  // 60 Seconds
 
   // Set Digital Pins
   pinMode(PinRele1, OUTPUT);
@@ -108,7 +138,7 @@ void setup() {
   SetDigitalPin(PinRele2, false);
   SetDigitalPin(PinRele3, false);
 
-
+  dht.begin();
 
   ShowOnLcd("Setup ready");
 }
