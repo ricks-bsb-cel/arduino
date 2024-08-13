@@ -374,7 +374,7 @@ void enterConfigMode() {
 void enterConnectNet() {
   BlynkState::set(MODE_CONNECTING_NET);
   DEBUG_PRINT(String("Connecting to WiFi: ") + configStore.wifiSSID);
-  ShowOnLcd(String("WiFi: ") + configStore.wifiSSID);
+  ShowOnLcd(String("WiFi ") + configStore.wifiSSID);
 
   WiFi.mode(WIFI_STA);
 

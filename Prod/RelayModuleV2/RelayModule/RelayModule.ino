@@ -2,7 +2,7 @@
 #define BLYNK_TEMPLATE_ID "TMPL2dhm-xT37"
 #define BLYNK_TEMPLATE_NAME "4 Relay Module"
 
-#define BLYNK_FIRMWARE_VERSION "0.1.2"
+#define BLYNK_FIRMWARE_VERSION "0.1.31"
 #define BLYNK_PRINT Serial
 #define BLYNK_DEBUG
 #define APP_DEBUG
@@ -71,6 +71,23 @@ BLYNK_WRITE(VirtualRele3) {
   Blynk.virtualWrite(VirtualConfRele3, !digitalRead(PinRele3));
 };
 
+void Initiate() {
+  // Ensure client is updated
+  if (Blynk.connected()) {
+    Blynk.beginGroup();
+    Blynk.virtualWrite(VirtualRele1, 0);
+    Blynk.virtualWrite(VirtualRele2, 0);
+    Blynk.virtualWrite(VirtualRele3, 0);
+
+    Blynk.virtualWrite(VirtualConfRele1, 0);
+    Blynk.virtualWrite(VirtualConfRele2, 0);
+    Blynk.virtualWrite(VirtualConfRele3, 0);
+    Blynk.endGroup();
+
+    Lcd.Log("Initiated");
+  }
+}
+
 /* ------------------------------------------------------ */
 
 void setup() {
@@ -91,10 +108,19 @@ void setup() {
   SetDigitalPin(PinRele2, false);
   SetDigitalPin(PinRele3, false);
 
+
+
   ShowOnLcd("Setup ready");
 }
+
+bool isInitiated = false;
 
 void loop() {
   BlynkEdgent.run();
   timer.run();
+
+  if (!isInitiated && Blynk.connected()) {
+    isInitiated = true;
+    Initiate();
+  }
 }
