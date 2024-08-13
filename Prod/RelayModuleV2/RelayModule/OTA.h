@@ -235,9 +235,10 @@ void enterOTA() {
     written += len;
     const int progress = (written*100)/contentLength;
     if (progress - prevProgress >= 10 || progress == 100) {
-#ifdef BLYNK_PRINT
-      BLYNK_PRINT.print(String("\r ") + progress + "%");
-#endif
+      ShowOnLcdSameLine("Updating... " + String(progress) + "%");
+      #ifdef BLYNK_PRINT
+        BLYNK_PRINT.print(String("\r ") + progress + "%");
+      #endif
       prevProgress = progress;
     }
   }
@@ -267,7 +268,7 @@ void enterOTA() {
   DEBUG_PRINT("=== Update successfully completed. Rebooting.");
   ShowOnLcd("Restarting...");
   delay(1000);
-  
+
   restartMCU();
 }
 

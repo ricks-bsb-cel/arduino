@@ -412,6 +412,10 @@ void enterConnectNet() {
     }
   }
 
+  if (WiFi.status() != WL_CONNECTED) {
+    ShowOnLcd("* WiFi Error *");
+  }
+
   if (WiFi.status() == WL_CONNECTED) {
     ShowOnLcd("WiFi Connected");
     IPAddress localip = WiFi.localIP();
