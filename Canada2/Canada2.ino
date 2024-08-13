@@ -12,11 +12,6 @@
 #include <ArduinoJson.h>  // https://arduinojson.org/?utm_source=meta&utm_medium=library.properties
 #include <ArduinoJson.hpp>
 
-#include <vector>
-#include <iostream>
-#include <sstream>
-#include <string>
-
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266HTTPClient.h>

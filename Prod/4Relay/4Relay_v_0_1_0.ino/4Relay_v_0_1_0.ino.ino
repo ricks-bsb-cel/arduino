@@ -4,6 +4,7 @@
 
 /*
 brisa-2154254: syvxfcxh
+claro_2G157197: 19157197
 */
 
 /* Don't forguet to update firmware versions! */
