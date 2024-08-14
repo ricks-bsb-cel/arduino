@@ -64,10 +64,10 @@
 #define BOARD_PWM_MAX                 1023
 
 #if !defined(CONFIG_DEVICE_PREFIX)
-#define CONFIG_DEVICE_PREFIX          "Blynk"
+  #define CONFIG_DEVICE_PREFIX        "Blynk"
 #endif
 #if !defined(CONFIG_AP_URL)
-#define CONFIG_AP_URL                 "blynk.setup"
+  #define CONFIG_AP_URL               "blynk.setup"
 #endif
 #if !defined(CONFIG_DEFAULT_SERVER)
 #define CONFIG_DEFAULT_SERVER         "blynk.cloud"
@@ -79,7 +79,8 @@
 #define WIFI_CLOUD_MAX_RETRIES        500
 #define WIFI_NET_CONNECT_TIMEOUT      50000
 #define WIFI_CLOUD_CONNECT_TIMEOUT    50000
-#define WIFI_AP_IP                    IPAddress(192, 168, 4, 1)
+// #define WIFI_AP_IP                    IPAddress(192, 168, 4, 1)
+#define WIFI_AP_IP                    IPAddress(172, 0, 0, 1)
 #define WIFI_AP_Subnet                IPAddress(255, 255, 255, 0)
 //#define WIFI_CAPTIVE_PORTAL_ENABLE
 

@@ -2,11 +2,15 @@
 #define BLYNK_TEMPLATE_ID "TMPL2dhm-xT37"
 #define BLYNK_TEMPLATE_NAME "4 Relay Module"
 
-#define BLYNK_FIRMWARE_VERSION "0.1.33"
+#define BLYNK_FIRMWARE_VERSION "0.1.34"
 #define BLYNK_PRINT Serial
-// #define BLYNK_DEBUG
-// #define APP_DEBUG
+#define BLYNK_DEBUG
+#define APP_DEBUG
+// #define WIFI_CAPTIVE_PORTAL_ENABLE
 #define USE_NODE_MCU_BOARD
+
+#define VirtualMessage V0
+#define VirtualResetWiFi V99
 
 /* Relay Config ------------------------------ */
 #define PinRele1 D0
@@ -42,6 +46,7 @@ LcdLog Lcd("HeySensa " + String(BLYNK_FIRMWARE_VERSION), true);
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
 #include <DHT_U.h>
+#include <String.h>
 
 #include "BlynkEdgent.h"
 
@@ -58,9 +63,14 @@ void BlinkTimer() {
   dht.humidity().getEvent(&h);
 
   Blynk.beginGroup();
+  // Keep updated!
   Blynk.virtualWrite(VirtualConfRele1, !digitalRead(PinRele1));
   Blynk.virtualWrite(VirtualConfRele2, !digitalRead(PinRele2));
   Blynk.virtualWrite(VirtualConfRele3, !digitalRead(PinRele3));
+
+  Blynk.virtualWrite(VirtualRele1, !digitalRead(PinRele1));
+  Blynk.virtualWrite(VirtualRele2, !digitalRead(PinRele2));
+  Blynk.virtualWrite(VirtualRele3, !digitalRead(PinRele3));
 
   if (!isnan(t.temperature)) {
     Blynk.virtualWrite(VirtualTemperature, t.temperature);
@@ -99,6 +109,21 @@ BLYNK_WRITE(VirtualRele3) {
   SetDigitalPin(PinRele3, param.asInt() == 1);
   delay(100);
   Blynk.virtualWrite(VirtualConfRele3, !digitalRead(PinRele3));
+};
+
+BLYNK_WRITE(VirtualMessage) {
+  String msg = param.asString();
+  if (!msg.isEmpty()) {
+    Lcd.Log(msg);
+  }
+};
+
+BLYNK_WRITE(VirtualResetWiFi) {
+  if (param.asInt() == 1) {
+    Lcd.Log("Resetting config");
+    delay(1000);
+    enterResetConfig();
+  }
 };
 
 void Initiate() {

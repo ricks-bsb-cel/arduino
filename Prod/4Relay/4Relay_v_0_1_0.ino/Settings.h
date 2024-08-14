@@ -97,6 +97,8 @@ LcdLog Lcd("HeySensa " + String(BLYNK_FIRMWARE_VERSION), true);
 #define LogOnLcd(p1) { Lcd.Log(p1); }
 
 // isso: ShowOnLcd(String("WiFi: ") + configStore.wifiSSID);
+    ShowOnLcd("WiFi Connected");
+
 
 #if defined(APP_DEBUG)
   // #define DEBUG_PRINT(...)  BLYNK_LOG1(__VA_ARGS__)

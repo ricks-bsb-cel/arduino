@@ -11,28 +11,22 @@ const char* config_form = R"html(
 <html>
 <head>
   <title>WiFi setup</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
   body {
-    background-color: #fcfcfc;
     box-sizing: border-box;
   }
   body, input {
-    font-family: Roboto, sans-serif;
+    font-family: Monospace, sans-serif;
     font-weight: 400;
-    font-size: 16px;
+    font-size: 1.1em;
   }
   .centered {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-
     padding: 20px;
-    background-color: #ccc;
-    border-radius: 4px;
   }
   td { padding:0 0 0 5px; }
-  label { white-space:nowrap; }
+  .right{ width: 60px; text-align: right; }
+  label { white-space:nowrap; width: 100%;}
   input { width: 20em; }
   input[name="port"] { width: 5em; }
   input[type="submit"], img { margin: auto; display: block; width: 30%; }
@@ -40,13 +34,16 @@ const char* config_form = R"html(
 </head> 
 <body>
 <div class="centered">
+  <h1>HeySensa</h1>
+  <p>Device Configuration</p>
   <form method="get" action="config">
     <table>
-    <tr><td><label for="ssid">WiFi SSID:</label></td>  <td><input type="text" name="ssid" length=64 required="required"></td></tr>
-    <tr><td><label for="pass">Password:</label></td>   <td><input type="text" name="pass" length=64></td></tr>
-    <tr><td><label for="blynk">Auth token:</label></td><td><input type="text" name="blynk" placeholder="a0b1c2d..." pattern="[-_a-zA-Z0-9]{32}" maxlength="32" required="required"></td></tr>
-    <tr><td><label for="host">Host:</label></td>       <td><input type="text" name="host" value="blynk.cloud" length=64></td></tr>
-    <tr><td><label for="port_ssl">Port:</label></td>   <td><input type="number" name="port_ssl" value="443" min="1" max="65535"></td></tr>
+    <tr><td class="right"><label for="ssid">WiFi SSID:</label></td>  <td><input type="text" name="ssid" length=64 required="required"></td></tr>
+    <tr><td class="right"><label for="pass">Password:</label></td>   <td><input type="text" name="pass" length=64></td></tr>
+    <tr><td class="right"><label for="blynk">Device ID:</label></td><td><input type="text" name="blynk" placeholder="a0b1c2d..." pattern="[-_a-zA-Z0-9]{32}" maxlength="32" required="required"></td></tr>
+    <tr><td colspan="2"></td></tr><tr><td colspan="2"></td></tr>
+    <tr><td class="right"><label for="host">Host:</label></td><td><input type="text" name="host" value="blynk.cloud" readonly="readonly" length="64"></td></tr>
+    <tr><td class="right"><label for="port_ssl">Port:</label></td><td><input type="number" name="port_ssl" value="443" readonly="readonly" min="1" max="65535"></td></tr>
     </table><br/>
     <input type="submit" value="Apply">
   </form>
@@ -154,6 +151,7 @@ void enterConfigMode() {
   delay(500);
 
   IPAddress myIP = WiFi.softAPIP();
+
   if (myIP == (uint32_t)0) {
     config_set_last_error(BLYNK_PROV_ERR_INTERNAL);
     BlynkState::set(MODE_ERROR);
@@ -163,16 +161,25 @@ void enterConfigMode() {
   // Set up DNS Server
   dnsServer.setTTL(300);                                     // Time-to-live 300s
   dnsServer.setErrorReplyCode(DNSReplyCode::ServerFailure);  // Return code for non-accessible domains
-#ifdef WIFI_CAPTIVE_PORTAL_ENABLE
-  dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());  // Point all to our IP
-  server.onNotFound(handleRoot);
-#else
-  dnsServer.start(DNS_PORT, CONFIG_AP_URL, WiFi.softAPIP());
-  DEBUG_PRINT(String("AP URL:  ") + CONFIG_AP_URL);
-  ShowOnLcd("Access Point & URL:");
-  ShowOnLcd(CONFIG_AP_URL);
+  #ifdef WIFI_CAPTIVE_PORTAL_ENABLE
+    dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());  // Point all to our IP
+    // server.onNotFound(handleRoot);
+    server.onNotFound(config_form);
+  #else
+    // dnsServer.start(DNS_PORT, CONFIG_AP_URL, WiFi.softAPIP());
+    dnsServer.start(DNS_PORT, "*", WIFI_AP_IP);
 
-#endif
+    DEBUG_PRINT(String("CONFIG_AP_URL: ") + String(CONFIG_AP_URL));
+    DEBUG_PRINT(String("DNS_PORT: ") + String(DNS_PORT));
+    DEBUG_PRINT(String("WiFi.softAPIP: ") + myIP.toString());
+    DEBUG_PRINT(String("WIFI_AP_IP: ") + WIFI_AP_IP.toString());
+    // DEBUG_PRINT("WIFI_AP_Subnet: " + String(WIFI_AP_Subnet));
+
+    ShowOnLcd("Access Point & URL:");
+    ShowOnLcd(getWiFiName().c_str());
+    ShowOnLcd("http://" + String(CONFIG_AP_URL));
+
+  #endif
 
   httpUpdater.setup(&server, "/update");
 
@@ -398,10 +405,12 @@ void enterConnectNet() {
   if (!WiFi.begin(configStore.wifiSSID, configStore.wifiPass)) {
     config_set_last_error(BLYNK_PROV_ERR_CONFIG);
     BlynkState::set(MODE_ERROR);
+    ShowOnLcd("WiFi Invalid");
     return;
   }
 
   unsigned long timeoutMs = millis() + WIFI_NET_CONNECT_TIMEOUT;
+
   while ((timeoutMs > millis()) && (WiFi.status() != WL_CONNECTED)) {
     delay(10);
     app_loop();
@@ -413,7 +422,7 @@ void enterConnectNet() {
   }
 
   if (WiFi.status() != WL_CONNECTED) {
-    ShowOnLcd("* WiFi Error *");
+    ShowOnLcd("*WiFi not Connected*");
   }
 
   if (WiFi.status() == WL_CONNECTED) {
@@ -439,6 +448,8 @@ void enterConnectCloud() {
   Blynk.config(configStore.cloudToken, configStore.cloudHost, configStore.cloudPort);
   Blynk.connect(0);
 
+  ShowOnLcd("Connecting to Cloud");
+
   unsigned long timeoutMs = millis() + WIFI_CLOUD_CONNECT_TIMEOUT;
   while ((timeoutMs > millis()) && (WiFi.status() == WL_CONNECTED) && (!Blynk.isTokenInvalid()) && (Blynk.connected() == false)) {
     delay(10);
@@ -452,7 +463,7 @@ void enterConnectCloud() {
 
   if (millis() > timeoutMs) {
     DEBUG_PRINT("Timeout");
-    ShowOnLcd("Timeout");
+    ShowOnLcdSameLine("Connecting Error");
   }
 
   if (Blynk.isTokenInvalid()) {
@@ -461,6 +472,8 @@ void enterConnectCloud() {
   } else if (WiFi.status() != WL_CONNECTED) {
     BlynkState::set(MODE_CONNECTING_NET);
   } else if (Blynk.connected()) {
+    ShowOnLcdSameLine("Cloud Connected");
+
     BlynkState::set(MODE_RUNNING);
     connectBlynkRetries = WIFI_CLOUD_MAX_RETRIES;
 
